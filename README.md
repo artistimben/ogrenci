@@ -159,3 +159,4 @@ Sistemde kullanılan özellikler:
 - ✅ Modern UI/UX
 - ✅ E-posta bildirimleri
 - ✅ Abonelik yönetimi
+# ogrenci
