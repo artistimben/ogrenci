@@ -33,62 +33,50 @@ class DemoResourceSeeder extends Seeder
         $adminResources = [
             [
                 'name' => 'TYT Matematik Soru Bankası',
-                'publisher' => 'Acil Yayınları',
                 'description' => 'TYT matematik konularını kapsayan kapsamlı soru bankası',
             ],
             [
                 'name' => 'AYT Fizik 1000 Soru',
-                'publisher' => 'Palme Yayınevi',
                 'description' => 'AYT fizik müfredatını kapsayan detaylı soru bankası',
             ],
             [
                 'name' => 'TYT Türkçe Deneme Seti',
-                'publisher' => '3D Yayınları',
                 'description' => '40 adet TYT türkçe denemesi',
             ],
             [
                 'name' => 'AYT Matematik Konu Anlatımlı',
-                'publisher' => 'Karekök Yayınları',
                 'description' => 'AYT matematik konuları detaylı anlatım ve örneklerle',
             ],
             [
                 'name' => 'DGS Sayısal Mantık',
-                'publisher' => 'Uzman Kariyer',
                 'description' => 'DGS sayısal mantık ve matematik soruları',
             ],
             [
                 'name' => 'KPSS Genel Yetenek',
-                'publisher' => 'Kariyer Meslek',
                 'description' => 'KPSS genel yetenek testleri',
             ],
             [
                 'name' => 'TYT Geometri Fasikülü',
-                'publisher' => 'Bi\' Yayınları',
                 'description' => 'TYT geometri konuları fasikül şeklinde',
             ],
             [
                 'name' => 'AYT Kimya Soru Bankası',
-                'publisher' => 'Okyanus Yayınları',
                 'description' => 'AYT kimya dersi için kapsamlı soru bankası',
             ],
             [
                 'name' => 'TYT Tarih Konu Anlatım',
-                'publisher' => 'Hız ve Renk Yayınları',
                 'description' => 'TYT tarih konularının özet anlatımı',
             ],
             [
                 'name' => 'AYT Edebiyat Denemeler',
-                'publisher' => 'Limit Yayınları',
                 'description' => '30 adet AYT edebiyat denemesi',
             ],
             [
                 'name' => 'TYT Biyoloji Soru Bankası',
-                'publisher' => 'Fenomen Yayınları',
                 'description' => 'TYT biyoloji konuları kapsamlı soru bankası',
             ],
             [
                 'name' => 'KPSS Genel Kültür',
-                'publisher' => 'Yediiklim Yayınları',
                 'description' => 'KPSS genel kültür soru bankası',
             ],
         ];
@@ -96,7 +84,6 @@ class DemoResourceSeeder extends Seeder
         foreach ($adminResources as $resourceData) {
             Resource::create([
                 'name' => $resourceData['name'],
-                'publisher' => $resourceData['publisher'],
                 'description' => $resourceData['description'],
                 'created_by_user_id' => $admin->id,
                 'is_admin_resource' => true,
@@ -108,12 +95,10 @@ class DemoResourceSeeder extends Seeder
             $coachResources = [
                 [
                     'name' => 'Özel Ders Notu - ' . $coach->name,
-                    'publisher' => null,
                     'description' => 'Kendi hazırladığım ders notları',
                 ],
                 [
                     'name' => 'Test Kitabı - ' . substr($coach->name, 0, 10),
-                    'publisher' => 'Kişisel',
                     'description' => 'Öğrencilerim için hazırladığım testler',
                 ],
             ];
@@ -121,7 +106,6 @@ class DemoResourceSeeder extends Seeder
             foreach ($coachResources as $resourceData) {
                 Resource::create([
                     'name' => $resourceData['name'],
-                    'publisher' => $resourceData['publisher'],
                     'description' => $resourceData['description'],
                     'created_by_user_id' => $coach->id,
                     'is_admin_resource' => false,
