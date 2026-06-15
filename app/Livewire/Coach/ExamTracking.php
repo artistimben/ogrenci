@@ -26,7 +26,7 @@ class ExamTracking extends Component
 
     public function mount()
     {
-        $this->fields = \App\Models\Field::examCategories()
+        $this->fields = \App\Models\Field::courseFields()
             ->where('is_active', true)
             ->orderBy('order')
             ->get();

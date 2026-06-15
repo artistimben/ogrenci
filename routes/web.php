@@ -15,7 +15,7 @@ Route::get('/', function () {
             return redirect('/student/dashboard');
         }
     }
-    return redirect('/login');
+    return view('welcome');
 });
 
 // Auth Routes

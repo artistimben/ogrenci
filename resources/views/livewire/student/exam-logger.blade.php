@@ -129,9 +129,9 @@
     <!-- Modal -->
     @if($showModal)
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" wire:click="closeModal">
-            <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white" wire:click.stop>
+            <div class="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-lg bg-white" wire:click.stop>
                 <div class="flex items-center justify-between pb-4 border-b">
-                    <h3 class="text-xl font-semibold text-gray-900">Deneme Sonucu Ekle</h3>
+                    <h3 class="text-xl font-semibold text-gray-900">Deneme Sonucu Ekle (Çoklu Ders)</h3>
                     <button wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -140,21 +140,23 @@
                 </div>
 
                 <form wire:submit.prevent="save" class="mt-4 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Deneme Adı *</label>
-                        <input type="text" wire:model="exam_name" class="input-field" placeholder="TYT Deneme 1">
-                        @error('exam_name') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tarih *</label>
-                        <input type="date" wire:model="exam_date" class="input-field">
-                        @error('exam_date') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Alan/Branş</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Deneme Adı *</label>
+                            <input type="text" wire:model="exam_name" class="input-field" placeholder="Örn: Özdebir TYT 1">
+                            @error('exam_name') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tarih *</label>
+                            <input type="date" wire:model="exam_date" class="input-field">
+                            @error('exam_date') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Alan/Branş *</label>
                             <select wire:model.live="field_id" class="input-field">
                                 <option value="">Alan Seçin</option>
                                 @foreach($fields as $field)
@@ -176,52 +178,91 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ders</label>
-                        <select wire:model="course_id" class="input-field">
-                            <option value="">Ders Seçin</option>
-                            @if($field_id && count($filteredCourses) > 0)
-                                @foreach($filteredCourses as $course)
-                                    <option value="{{ $course->id }}">{{ $course->name }}</option>
-                                @endforeach
-                            @else
-                                @foreach($courses as $course)
-                                    <option value="{{ $course->id }}">{{ $course->name }}</option>
-                                @endforeach
-                            @endif
-                        </select>
-                        @error('course_id') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Doğru *</label>
-                            <input type="number" wire:model.live="correct_answers" class="input-field" placeholder="30" min="0">
-                            @error('correct_answers') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    @if($field_id && count($filteredCourses) > 0)
+                        <div class="mt-6">
+                            <h4 class="text-md font-semibold text-gray-900 mb-3 pb-2 border-b">Ders Sınav Sonuçları</h4>
+                            <div class="overflow-x-auto border rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ders Adı</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Doğru</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Yanlış</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Boş</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Net</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-100">
+                                        @foreach($filteredCourses as $course)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                                    {{ $course->name }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number" 
+                                                           wire:model.live="courseResults.{{ $course->id }}.correct" 
+                                                           class="input-field text-center py-1 px-2 text-sm w-20 mx-auto block" 
+                                                           placeholder="0" 
+                                                           min="0">
+                                                    @error("courseResults.{$course->id}.correct") 
+                                                        <span class="text-xs text-red-600 block mt-1 text-center">{{ $message }}</span> 
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number" 
+                                                           wire:model.live="courseResults.{{ $course->id }}.wrong" 
+                                                           class="input-field text-center py-1 px-2 text-sm w-20 mx-auto block" 
+                                                           placeholder="0" 
+                                                           min="0">
+                                                    @error("courseResults.{$course->id}.wrong") 
+                                                        <span class="text-xs text-red-600 block mt-1 text-center">{{ $message }}</span> 
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number" 
+                                                           wire:model.live="courseResults.{{ $course->id }}.blank" 
+                                                           class="input-field text-center py-1 px-2 text-sm w-20 mx-auto block" 
+                                                           placeholder="0" 
+                                                           min="0">
+                                                    @error("courseResults.{$course->id}.blank") 
+                                                        <span class="text-xs text-red-600 block mt-1 text-center">{{ $message }}</span> 
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                    <span class="text-sm font-bold {{ ($courseResults[$course->id]['net'] ?? 0) >= 0 ? 'text-blue-600' : 'text-red-600' }}">
+                                                        {{ number_format($courseResults[$course->id]['net'] ?? 0, 2) }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-gray-50">
+                                        <tr>
+                                            <td class="px-4 py-3 text-sm font-semibold text-gray-900">Toplam Hesaplanan Net</td>
+                                            <td colspan="3"></td>
+                                            <td class="px-4 py-3 text-center whitespace-nowrap text-base font-bold text-blue-600">
+                                                @php
+                                                    $totalNet = 0;
+                                                    foreach($courseResults as $cRes) {
+                                                        $totalNet += (float)($cRes['net'] ?? 0);
+                                                    }
+                                                @endphp
+                                                {{ number_format($totalNet, 2) }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Yanlış *</label>
-                            <input type="number" wire:model.live="wrong_answers" class="input-field" placeholder="8" min="0">
-                            @error('wrong_answers') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    @else
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center text-gray-500 mt-6">
+                            Lütfen derslerin listelenmesi için bir Alan/Branş seçin.
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Boş *</label>
-                            <input type="number" wire:model="blank_answers" class="input-field" placeholder="2" min="0">
-                            @error('blank_answers') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div class="text-sm text-gray-700 mb-1">Hesaplanan Net:</div>
-                        <div class="text-3xl font-bold text-blue-600">
-                            {{ number_format($net_score, 2) }}
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">Net = Doğru - (Yanlış ÷ 4)</div>
-                    </div>
+                    @endif
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Notlar</label>
-                        <textarea wire:model="notes" class="input-field" rows="3" placeholder="İsteğe bağlı notlar..."></textarea>
+                        <textarea wire:model="notes" class="input-field" rows="2" placeholder="İsteğe bağlı notlar..."></textarea>
                         @error('notes') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                     </div>
 

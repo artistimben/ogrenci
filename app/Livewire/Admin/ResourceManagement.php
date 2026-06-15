@@ -125,7 +125,7 @@ class ResourceManagement extends Component
         }
 
         $resources = $query->latest()->paginate(15);
-        $fields = \App\Models\Field::where('is_active', true)->orderBy('order')->get();
+        $fields = \App\Models\Field::courseFields()->where('is_active', true)->orderBy('order')->get();
 
         return view('livewire.admin.resource-management', [
             'resources' => $resources,

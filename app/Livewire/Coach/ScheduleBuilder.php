@@ -370,7 +370,7 @@ class ScheduleBuilder extends Component
         session()->flash('message', 'Şablon kopyalandı ve öğrenciye atandı.');
 
         // Redirect to the new schedule
-        return redirect()->route('coach.schedule-builder', ['scheduleId' => $newSchedule->id]);
+        return redirect()->route('coach.schedules.edit', ['schedule' => $newSchedule->id]);
     }
 
     public function toggleItemActive($itemId)

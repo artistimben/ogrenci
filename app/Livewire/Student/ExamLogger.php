@@ -16,34 +16,43 @@ class ExamLogger extends Component
     public $exam_name;
     public $exam_type;
     public $field_id;
-    public $course_id;
-    public $correct_answers;
-    public $wrong_answers;
-    public $blank_answers;
-    public $net_score = 0;
     public $exam_date;
     public $notes;
     
     public $fields = [];
     public $filteredCourses = [];
+    public $courseResults = [];
     public $examTypes = ['TYT', 'AYT', 'Deneme', 'Deneme-1', 'Deneme-2'];
 
-    protected $rules = [
-        'exam_name' => 'required|string|max:255',
-        'exam_type' => 'nullable|string|max:255',
-        'field_id' => 'nullable|exists:fields,id',
-        'course_id' => 'nullable|exists:courses,id',
-        'correct_answers' => 'required|integer|min:0',
-        'wrong_answers' => 'required|integer|min:0',
-        'blank_answers' => 'required|integer|min:0',
-        'exam_date' => 'required|date',
-        'notes' => 'nullable|string',
-    ];
+    protected function rules()
+    {
+        return [
+            'exam_name' => 'required|string|max:255',
+            'exam_type' => 'nullable|string|max:255',
+            'field_id' => 'required|exists:fields,id',
+            'exam_date' => 'required|date',
+            'notes' => 'nullable|string',
+            'courseResults.*.correct' => 'nullable|integer|min:0',
+            'courseResults.*.wrong' => 'nullable|integer|min:0',
+            'courseResults.*.blank' => 'nullable|integer|min:0',
+        ];
+    }
+
+    protected function validationAttributes()
+    {
+        $attributes = [];
+        foreach ($this->filteredCourses as $course) {
+            $attributes["courseResults.{$course->id}.correct"] = "{$course->name} Doğru";
+            $attributes["courseResults.{$course->id}.wrong"] = "{$course->name} Yanlış";
+            $attributes["courseResults.{$course->id}.blank"] = "{$course->name} Boş";
+        }
+        return $attributes;
+    }
 
     public function mount()
     {
         $this->exam_date = now()->format('Y-m-d');
-        $this->fields = Field::examCategories()
+        $this->fields = Field::courseFields()
             ->where('is_active', true)
             ->orderBy('order')
             ->get();
@@ -51,31 +60,47 @@ class ExamLogger extends Component
 
     public function updatedFieldId($value)
     {
-        $this->course_id = null;
+        $this->courseResults = [];
         $this->filteredCourses = [];
 
         if ($value) {
             $this->filteredCourses = Course::where('field_id', $value)
                 ->where('is_active', true)
+                ->orderBy('order')
                 ->orderBy('name')
                 ->get();
+            
+            foreach ($this->filteredCourses as $course) {
+                $this->courseResults[$course->id] = [
+                    'correct' => '',
+                    'wrong' => '',
+                    'blank' => '',
+                    'net' => 0.00,
+                ];
+            }
         }
     }
 
-    public function updated($propertyName)
+    public function updatedCourseResults($value, $key)
     {
-        if (in_array($propertyName, ['correct_answers', 'wrong_answers'])) {
-            $this->calculateNet();
+        $parts = explode('.', $key);
+        if (count($parts) >= 2) {
+            $courseId = $parts[0];
+            $this->calculateCourseNet($courseId);
         }
     }
 
-    public function calculateNet()
+    public function calculateCourseNet($courseId)
     {
-        $correct = (int) $this->correct_answers;
-        $wrong = (int) $this->wrong_answers;
-        
-        // Net hesaplama: doğru - (yanlış / 4)
-        $this->net_score = $correct - ($wrong / 4);
+        if (isset($this->courseResults[$courseId])) {
+            $correct = $this->courseResults[$courseId]['correct'];
+            $wrong = $this->courseResults[$courseId]['wrong'];
+            
+            $correctVal = ($correct !== '' && $correct !== null) ? (int) $correct : 0;
+            $wrongVal = ($wrong !== '' && $wrong !== null) ? (int) $wrong : 0;
+            
+            $this->courseResults[$courseId]['net'] = $correctVal - ($wrongVal / 4);
+        }
     }
 
     public function openModal()
@@ -92,7 +117,7 @@ class ExamLogger extends Component
 
     public function resetForm()
     {
-        $this->reset(['exam_name', 'exam_type', 'field_id', 'course_id', 'correct_answers', 'wrong_answers', 'blank_answers', 'net_score', 'notes']);
+        $this->reset(['exam_name', 'exam_type', 'field_id', 'notes', 'courseResults']);
         $this->filteredCourses = [];
         $this->exam_date = now()->format('Y-m-d');
         $this->resetValidation();
@@ -102,21 +127,48 @@ class ExamLogger extends Component
     {
         $this->validate();
 
-        ExamResult::create([
-            'student_id' => auth()->id(),
-            'exam_name' => $this->exam_name,
-            'exam_type' => $this->exam_type,
-            'field_id' => $this->field_id,
-            'course_id' => $this->course_id,
-            'correct_answers' => $this->correct_answers,
-            'wrong_answers' => $this->wrong_answers,
-            'blank_answers' => $this->blank_answers,
-            'net_score' => $this->net_score,
-            'exam_date' => $this->exam_date,
-            'notes' => $this->notes,
-        ]);
+        $hasAnyResult = false;
+        foreach ($this->courseResults as $result) {
+            if (($result['correct'] !== '' && $result['correct'] !== null) ||
+                ($result['wrong'] !== '' && $result['wrong'] !== null) ||
+                ($result['blank'] !== '' && $result['blank'] !== null)) {
+                $hasAnyResult = true;
+                break;
+            }
+        }
 
-        session()->flash('message', 'Deneme sonucunuz başarıyla kaydedildi.');
+        if (!$hasAnyResult) {
+            $this->addError('field_id', 'En az bir ders için doğru, yanlış veya boş değeri girmelisiniz.');
+            return;
+        }
+
+        foreach ($this->courseResults as $courseId => $result) {
+            if (($result['correct'] !== '' && $result['correct'] !== null) ||
+                ($result['wrong'] !== '' && $result['wrong'] !== null) ||
+                ($result['blank'] !== '' && $result['blank'] !== null)) {
+                
+                $correct = ($result['correct'] !== '' && $result['correct'] !== null) ? (int) $result['correct'] : 0;
+                $wrong = ($result['wrong'] !== '' && $result['wrong'] !== null) ? (int) $result['wrong'] : 0;
+                $blank = ($result['blank'] !== '' && $result['blank'] !== null) ? (int) $result['blank'] : 0;
+                $net = $correct - ($wrong / 4);
+
+                ExamResult::create([
+                    'student_id' => auth()->id(),
+                    'exam_name' => $this->exam_name,
+                    'exam_type' => $this->exam_type,
+                    'field_id' => $this->field_id,
+                    'course_id' => $courseId,
+                    'correct_answers' => $correct,
+                    'wrong_answers' => $wrong,
+                    'blank_answers' => $blank,
+                    'net_score' => $net,
+                    'exam_date' => $this->exam_date,
+                    'notes' => $this->notes,
+                ]);
+            }
+        }
+
+        session()->flash('message', 'Deneme sonuçlarınız başarıyla kaydedildi.');
         $this->closeModal();
     }
 
@@ -144,7 +196,7 @@ class ExamLogger extends Component
 
         // Stats by field
         $fieldStats = [];
-        $fieldsData = Field::examCategories()->where('is_active', true)->get();
+        $fieldsData = Field::courseFields()->where('is_active', true)->get();
         foreach ($fieldsData as $field) {
             $fieldResults = ExamResult::where('student_id', auth()->id())
                 ->where('field_id', $field->id)

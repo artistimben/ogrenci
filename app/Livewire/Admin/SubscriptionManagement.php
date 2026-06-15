@@ -15,11 +15,54 @@ class SubscriptionManagement extends Component
     public $filterStatus = '';
     public $filterPlan = '';
 
+    // Edit properties
+    public $showModal = false;
+    public $editingSubscriptionId = null;
+    public $subscription_plan_id;
+    public $end_date;
+    public $is_active = true;
+
     protected $queryString = ['search', 'filterStatus', 'filterPlan'];
 
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function editSubscription($id)
+    {
+        $subscription = Subscription::findOrFail($id);
+        $this->editingSubscriptionId = $id;
+        $this->subscription_plan_id = $subscription->subscription_plan_id;
+        $this->end_date = $subscription->end_date ? $subscription->end_date->format('Y-m-d') : null;
+        $this->is_active = $subscription->is_active;
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->reset(['editingSubscriptionId', 'subscription_plan_id', 'end_date', 'is_active']);
+    }
+
+    public function saveSubscription()
+    {
+        $this->validate([
+            'subscription_plan_id' => 'required|exists:subscription_plans,id',
+            'end_date' => 'required|date',
+            'is_active' => 'boolean',
+        ]);
+
+        $subscription = Subscription::findOrFail($this->editingSubscriptionId);
+        $subscription->update([
+            'subscription_plan_id' => $this->subscription_plan_id,
+            'end_date' => $this->end_date,
+            'next_payment_date' => $this->end_date,
+            'is_active' => $this->is_active,
+        ]);
+
+        session()->flash('message', 'Abonelik başarıyla güncellendi.');
+        $this->closeModal();
     }
 
     public function render()

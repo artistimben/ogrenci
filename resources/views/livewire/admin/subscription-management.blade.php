@@ -117,6 +117,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Durum
                         </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            İşlemler
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -163,6 +166,11 @@
                                     @endif
                                 </div>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button wire:click="editSubscription({{ $subscription->id }})" class="text-blue-600 hover:text-blue-900">
+                                    Düzenle
+                                </button>
+                            </td>
                         </tr>
                     @empty
                         <tr>
@@ -180,4 +188,54 @@
             {{ $subscriptions->links() }}
         </div>
     </div>
+
+    @if($showModal)
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center" wire:click="closeModal">
+            <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white" wire:click.stop>
+                <div class="flex items-center justify-between pb-4 border-b">
+                    <h3 class="text-xl font-semibold text-gray-900">Abonelik Düzenle</h3>
+                    <button wire:click="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <form wire:submit.prevent="saveSubscription" class="mt-4 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Paket *</label>
+                        <select wire:model="subscription_plan_id" class="input-field">
+                            @foreach($plans as $plan)
+                                <option value="{{ $plan->id }}">{{ $plan->name }} (₺{{ number_format($plan->price, 2) }}/ay)</option>
+                            @endforeach
+                        </select>
+                        @error('subscription_plan_id') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bitiş Tarihi *</label>
+                        <input type="date" wire:model="end_date" class="input-field">
+                        @error('end_date') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                wire:model="is_active" 
+                                class="h-4 w-4 text-accent-blue focus:ring-accent-blue border-gray-300 rounded"
+                            >
+                            <span class="ml-2 text-sm text-gray-700">Aktif</span>
+                        </label>
+                        @error('is_active') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+                        <button type="button" wire:click="closeModal" class="btn-secondary">İptal</button>
+                        <button type="submit" class="btn-primary">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

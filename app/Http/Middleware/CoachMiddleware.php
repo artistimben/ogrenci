@@ -19,6 +19,14 @@ class CoachMiddleware
             abort(403, 'Unauthorized access');
         }
 
+        $user = auth()->user();
+        $subscription = $user->subscription;
+
+        // Check if subscription exists, is active, and is not expired
+        if (!$subscription || !$subscription->is_active || ($subscription->end_date && $subscription->end_date->isPast())) {
+            abort(403, 'Aboneliğiniz sona ermiş veya aktif değil. Lütfen sistem yöneticinizle iletişime geçin.');
+        }
+
         return $next($request);
     }
 }

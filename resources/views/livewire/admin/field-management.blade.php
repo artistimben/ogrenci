@@ -239,6 +239,18 @@
                             >
                             @error('slug') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Kategori Türü *
+                            </label>
+                            <select wire:model="category_type" class="input-field">
+                                <option value="course_field">Ders Müfredat Alanı (Örn: TYT, AYT)</option>
+                                <option value="exam_category">Sınav/Deneme Kategorisi (Örn: Sayısal, Sözel)</option>
+                                <option value="both">Her İkisi</option>
+                            </select>
+                            @error('category_type') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
                     @endif
 
                     <div>

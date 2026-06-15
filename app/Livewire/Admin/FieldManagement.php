@@ -20,6 +20,7 @@ class FieldManagement extends Component
     public $slug;
     public $order = 0;
     public $is_active = true;
+    public $category_type = 'course_field';
     
     // Parent IDs
     public $selectedFieldId;
@@ -40,6 +41,7 @@ class FieldManagement extends Component
 
         if ($this->modalType === 'field') {
             $rules['slug'] = 'required|string|max:255|unique:fields,slug,' . $this->itemId;
+            $rules['category_type'] = 'required|in:course_field,exam_category,both';
         }
 
         return $rules;
@@ -108,7 +110,8 @@ class FieldManagement extends Component
 
     public function resetForm()
     {
-        $this->reset(['itemId', 'name', 'slug', 'order', 'editMode', 'selectedFieldId', 'selectedCourseId', 'selectedTopicId']);
+        $this->reset(['itemId', 'name', 'slug', 'order', 'editMode', 'selectedFieldId', 'selectedCourseId', 'selectedTopicId', 'category_type']);
+        $this->category_type = 'course_field';
         $this->is_active = true;
         $this->resetValidation();
     }
@@ -143,6 +146,7 @@ class FieldManagement extends Component
                 'slug' => $this->slug,
                 'order' => $this->order,
                 'is_active' => $this->is_active,
+                'category_type' => $this->category_type,
             ]);
             session()->flash('message', 'Alan güncellendi.');
         } else {
@@ -151,6 +155,7 @@ class FieldManagement extends Component
                 'slug' => $this->slug,
                 'order' => $this->order,
                 'is_active' => $this->is_active,
+                'category_type' => $this->category_type,
             ]);
             session()->flash('message', 'Alan eklendi.');
         }
@@ -250,6 +255,7 @@ class FieldManagement extends Component
         $this->slug = $item->slug ?? '';
         $this->order = $item->order;
         $this->is_active = $item->is_active;
+        $this->category_type = $item->category_type ?? 'course_field';
         $this->modalType = $type;
         $this->editMode = true;
         $this->showModal = true;
