@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Blade::directive('livewireScripts', function ($expression) {
+            return "<?php echo str_replace('data-update-uri=\"/livewire/update\"', 'data-update-uri=\"/public/livewire/update\"', \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts({$expression})); ?>";
+        });
     }
 }
