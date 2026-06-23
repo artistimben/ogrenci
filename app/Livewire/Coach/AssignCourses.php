@@ -129,9 +129,11 @@ class AssignCourses extends Component
         // Öğrenciye atanan konular
         $assignments = StudentAssignment::where('student_id', $this->studentId)
             ->where('coach_id', auth()->id())
-            ->with(['course', 'topic', 'subTopic'])
+            ->with(['course.field', 'topic', 'subTopic'])
             ->get()
-            ->groupBy('course.field.name');
+            ->groupBy(function ($item) {
+                return $item->course?->field?->name ?? 'Diğer';
+            });
 
         return view('livewire.coach.assign-courses', [
             'fields' => $fields,
