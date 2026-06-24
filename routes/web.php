@@ -26,6 +26,30 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Abonelik sona ermiş koçlar için özel sayfa (coach middleware olmadan)
+Route::get('/subscription-expired', function () {
+    // Giriş yapmamışsa login'e gönder
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    // Admin veya öğrenci ise kendi paneline gönder
+    if (auth()->user()->isAdmin()) {
+        return redirect('/admin/dashboard');
+    }
+    if (auth()->user()->isStudent()) {
+        return redirect('/student/dashboard');
+    }
+    // Abonelik kontrolü - aktif aboneliği olan koç buraya gelmemeli
+    $subscription = auth()->user()->subscription;
+    if ($subscription && $subscription->is_active && !($subscription->end_date && $subscription->end_date->isPast())) {
+        return redirect('/coach/dashboard');
+    }
+    return view('subscription-expired', [
+        'user' => auth()->user(),
+        'subscription' => $subscription,
+    ]);
+})->middleware('auth')->name('subscription.expired');
+
 // Admin Panel Routes
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', function () {

@@ -22,9 +22,15 @@ class CoachMiddleware
         $user = auth()->user();
         $subscription = $user->subscription;
 
-        // Check if subscription exists, is active, and is not expired
+        // Abonelik yoksa veya süresi dolmuşsa özel sayfaya yönlendir
         if (!$subscription || !$subscription->is_active || ($subscription->end_date && $subscription->end_date->isPast())) {
-            abort(403, 'Aboneliğiniz sona ermiş veya aktif değil. Lütfen sistem yöneticinizle iletişime geçin.');
+            // Livewire AJAX isteği ise JSON hata dön
+            if ($request->hasHeader('X-Livewire')) {
+                return response()->json([
+                    'redirect' => url('/subscription-expired'),
+                ], 200);
+            }
+            return redirect()->route('subscription.expired');
         }
 
         return $next($request);

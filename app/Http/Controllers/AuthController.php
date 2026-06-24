@@ -34,6 +34,11 @@ class AuthController extends Controller
             if ($user->isAdmin()) {
                 return redirect()->intended('/admin/dashboard');
             } elseif ($user->isCoach()) {
+                // Abonelik kontrolü - süresi dolmuşsa özel sayfaya yönlendir
+                $subscription = $user->subscription;
+                if (!$subscription || !$subscription->is_active || ($subscription->end_date && $subscription->end_date->isPast())) {
+                    return redirect()->route('subscription.expired');
+                }
                 return redirect()->intended('/coach/dashboard');
             } elseif ($user->isStudent()) {
                 return redirect()->intended('/student/dashboard');
