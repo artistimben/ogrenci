@@ -15,8 +15,20 @@ class StudentMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || !auth()->user()->isStudent()) {
-            abort(403, 'Unauthorized access');
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $user = auth()->user();
+
+        if (!$user->isStudent()) {
+            if ($user->isAdmin()) {
+                return redirect('/admin/dashboard');
+            }
+            if ($user->isCoach()) {
+                return redirect('/coach/dashboard');
+            }
+            return redirect('/');
         }
 
         return $next($request);

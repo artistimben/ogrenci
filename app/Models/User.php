@@ -118,21 +118,22 @@ class User extends Authenticatable
     // Helper Methods
     public function isAdmin(): bool
     {
-        return $this->role->name === 'admin';
+        // Hem 'admin' hem 'superadmin' rollerini kapsar
+        return in_array($this->role?->name, ['admin', 'superadmin']);
     }
 
     public function isSuperAdmin(): bool
     {
-        return $this->role->name === 'superadmin';
+        return $this->role?->name === 'superadmin';
     }
 
     public function isCoach(): bool
     {
-        return $this->role->name === 'coach';
+        return $this->role?->name === 'coach';
     }
 
     public function isStudent(): bool
     {
-        return $this->role->name === 'student';
+        return $this->role?->name === 'student';
     }
 }
