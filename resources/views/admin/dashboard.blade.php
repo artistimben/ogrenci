@@ -5,8 +5,31 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <!-- Tüm Oturumları Sıfırla Butonu -->
+            <form method="POST" action="{{ route('admin.clear-sessions') }}"
+                  onsubmit="return confirm('Tüm kullanıcıların oturumları kapatılacak ve tekrar giriş yapmaları gerekecek. Devam edilsin mi?')">
+                @csrf
+                <button type="submit"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Tüm Oturumları Sıfırla
+                </button>
+            </form>
         </div>
-        
+
+        {{-- Oturum temizleme başarı mesajı --}}
+        @if(session('session_cleared'))
+            <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                {{ session('session_cleared') }}
+            </div>
+        @endif
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Total Coaches -->

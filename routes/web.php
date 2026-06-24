@@ -71,6 +71,17 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/resources', function () {
         return view('admin.resources');
     })->name('admin.resources');
+
+    // Tüm oturumları sıfırla (sadece admin)
+    Route::post('/clear-sessions', function () {
+        $count = \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', '!=', auth()->id()) // Adminin kendi oturumunu silme
+            ->count();
+        \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', '!=', auth()->id())
+            ->delete();
+        return back()->with('session_cleared', "{$count} kullanıcı oturumu başarıyla sıfırlandı.");
+    })->name('admin.clear-sessions');
 });
 
 // Coach Panel Routes
