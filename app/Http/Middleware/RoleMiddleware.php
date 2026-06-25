@@ -22,7 +22,10 @@ class RoleMiddleware
         $user = auth()->user();
         
         if ($user->role->name !== $role) {
-            abort(403, 'Unauthorized access');
+            if ($user->isAdmin()) return redirect('/admin/dashboard');
+            if ($user->isCoach()) return redirect('/coach/dashboard');
+            if ($user->isStudent()) return redirect('/student/dashboard');
+            return redirect('/');
         }
 
         return $next($request);

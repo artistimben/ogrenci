@@ -100,7 +100,7 @@ class MySchedule extends Component
             ->with(['items.course', 'items.topic', 'items.subTopic'])
             ->first();
 
-        $progress = [];
+        $progress = collect();
         if ($schedule) {
             $progress = ScheduleProgress::where('student_id', auth()->id())
                 ->where('week_start_date', $this->selectedWeekStart)
