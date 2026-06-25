@@ -119,12 +119,50 @@ class AssignCourses extends Component
         session()->flash('message', 'Atama kaldırıldı.');
     }
 
+    public function removeFieldAssignments($fieldId)
+    {
+        $courseIds = Course::where('field_id', $fieldId)->pluck('id');
+        
+        StudentAssignment::where('student_id', $this->studentId)
+            ->where('coach_id', auth()->id())
+            ->whereIn('course_id', $courseIds)
+            ->delete();
+
+        session()->flash('message', 'Alan atamaları tamamen kaldırıldı.');
+    }
+
+    public function removeCourseAssignments($courseId)
+    {
+        StudentAssignment::where('student_id', $this->studentId)
+            ->where('coach_id', auth()->id())
+            ->where('course_id', $courseId)
+            ->delete();
+
+        session()->flash('message', 'Ders atamaları tamamen kaldırıldı.');
+    }
+
+    public function removeTopicAssignments($topicId)
+    {
+        StudentAssignment::where('student_id', $this->studentId)
+            ->where('coach_id', auth()->id())
+            ->where('topic_id', $topicId)
+            ->delete();
+
+        session()->flash('message', 'Konu atamaları tamamen kaldırıldı.');
+    }
+
     public function render()
     {
-        $fields = Field::with(['courses.topics.subTopics'])
-            ->where('is_active', true)
+        $fields = Field::where('is_active', true)
             ->orderBy('order')
             ->get();
+
+        // Sadece expanded olan field'ların ilişkilerini yükle
+        foreach ($fields as $field) {
+            if (in_array($field->id, $this->expandedFields)) {
+                $field->load(['courses.topics.subTopics']);
+            }
+        }
 
         // Öğrenciye atanan konular
         $assignments = StudentAssignment::where('student_id', $this->studentId)
