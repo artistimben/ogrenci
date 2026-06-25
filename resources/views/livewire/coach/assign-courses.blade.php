@@ -60,6 +60,15 @@
                                     <div class="pl-4 border-l-2 border-gray-200">
                                         <div class="flex items-center justify-between py-2">
                                             <div class="flex items-center gap-2">
+                                                <button 
+                                                    wire:click="toggleCourse({{ $course->id }})"
+                                                    class="text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                >
+                                                    <svg class="w-4 h-4 transition-transform {{ in_array($course->id, $expandedCourses) ? 'rotate-90' : '' }}" 
+                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                    </svg>
+                                                </button>
                                                 <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
                                                 </svg>
@@ -80,31 +89,28 @@
                                         </div>
 
                                         <!-- Konular -->
-                                        <div class="pl-4 space-y-1 mt-2">
-                                            @foreach($course->topics->take(3) as $topic)
-                                                <div class="flex items-center justify-between py-1 text-sm">
-                                                    <span class="text-gray-600">
-                                                        • {{ $topic->name }} 
-                                                        <span class="text-xs text-gray-400">
-                                                            ({{ $topic->subTopics->count() }} alt konu)
+                                        @if(in_array($course->id, $expandedCourses))
+                                            <div class="pl-4 space-y-1 mt-2">
+                                                @foreach($course->topics as $topic)
+                                                    <div class="flex items-center justify-between py-1 text-sm">
+                                                        <span class="text-gray-600">
+                                                            • {{ $topic->name }} 
+                                                            <span class="text-xs text-gray-400">
+                                                                ({{ $topic->subTopics->count() }} alt konu)
+                                                            </span>
                                                         </span>
-                                                    </span>
-                                                    <button 
-                                                        wire:click="assignTopic({{ $topic->id }})"
-                                                        wire:loading.attr="disabled"
-                                                        class="px-2 py-0.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 flex items-center gap-1 disabled:opacity-50"
-                                                    >
-                                                        <span wire:loading wire:target="assignTopic({{ $topic->id }})" class="animate-spin inline-block w-2.5 h-2.5 border-2 border-white border-t-transparent rounded-full" role="status"></span>
-                                                        Ata
-                                                    </button>
-                                                </div>
-                                            @endforeach
-                                            @if($course->topics->count() > 3)
-                                                <p class="text-xs text-gray-400 pl-2">
-                                                    ... ve {{ $course->topics->count() - 3 }} konu daha
-                                                </p>
-                                            @endif
-                                        </div>
+                                                        <button 
+                                                            wire:click="assignTopic({{ $topic->id }})"
+                                                            wire:loading.attr="disabled"
+                                                            class="px-2 py-0.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 flex items-center gap-1 disabled:opacity-50"
+                                                        >
+                                                            <span wire:loading wire:target="assignTopic({{ $topic->id }})" class="animate-spin inline-block w-2.5 h-2.5 border-2 border-white border-t-transparent rounded-full" role="status"></span>
+                                                            Ata
+                                                        </button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

@@ -24,6 +24,7 @@ class AssignCourses extends Component
     // View
     public $showAssignModal = false;
     public $expandedFields = [];
+    public $expandedCourses = [];
 
     public function mount($studentId)
     {
@@ -42,6 +43,15 @@ class AssignCourses extends Component
             $this->expandedFields = array_diff($this->expandedFields, [$fieldId]);
         } else {
             $this->expandedFields[] = $fieldId;
+        }
+    }
+
+    public function toggleCourse($courseId)
+    {
+        if (in_array($courseId, $this->expandedCourses)) {
+            $this->expandedCourses = array_diff($this->expandedCourses, [$courseId]);
+        } else {
+            $this->expandedCourses[] = $courseId;
         }
     }
 
