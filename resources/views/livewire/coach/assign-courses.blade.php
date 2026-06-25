@@ -142,9 +142,18 @@
                 <div class="space-y-4 max-h-[600px] overflow-y-auto">
                     @foreach($assignments as $fieldName => $fieldAssignments)
                         <div class="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
-                            <!-- Alan Seviyesi Silme -->
+                            <!-- Alan Seviyesi Silme ve Katlama -->
                             <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
                                 <h4 class="font-semibold text-gray-800 flex items-center gap-1.5">
+                                    <button 
+                                        wire:click="toggleAssignedField('{{ $fieldName }}')"
+                                        class="text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    >
+                                        <svg class="w-4 h-4 transition-transform {{ !in_array($fieldName, $collapsedAssignedFields) ? 'rotate-90' : '' }}" 
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </button>
                                     <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                                     {{ $fieldName }}
                                 </h4>
@@ -165,83 +174,114 @@
                                 @endif
                             </div>
                             
-                            @php
-                                $groupedByCourse = $fieldAssignments->groupBy('course.name');
-                            @endphp
+                            @if(!in_array($fieldName, $collapsedAssignedFields))
+                                @php
+                                    $groupedByCourse = $fieldAssignments->groupBy('course.name');
+                                @endphp
 
-                            @foreach($groupedByCourse as $courseName => $courseAssignments)
-                                <div class="mb-4 pl-3 border-l-2 border-blue-200 bg-white p-3 rounded-md shadow-sm">
-                                    <!-- Ders Seviyesi Silme -->
-                                    <div class="flex items-center justify-between mb-2 pb-1 border-b border-dashed border-gray-100">
-                                        <div class="font-semibold text-gray-700 flex items-center gap-1.5">
-                                            <span>📚 {{ $courseName }}</span>
-                                            <span class="text-xs text-gray-500 font-normal">
-                                                ({{ $courseAssignments->count() }} alt konu)
-                                            </span>
-                                        </div>
+                                @foreach($groupedByCourse as $courseName => $courseAssignments)
+                                    <div class="mb-4 pl-3 border-l-2 border-blue-200 bg-white p-3 rounded-md shadow-sm">
+                                        <!-- Ders Seviyesi Silme ve Katlama -->
                                         @php
                                             $courseId = $courseAssignments->first()?->course_id;
                                         @endphp
-                                        @if($courseId)
-                                            <button 
-                                                wire:click="removeCourseAssignments({{ $courseId }})"
-                                                wire:loading.attr="disabled"
-                                                class="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
-                                                onclick="return confirm('Bu derse ({{ $courseName }}) ait TÜM atamaları kaldırmak istediğinizden emin misiniz?')"
-                                            >
-                                                <span wire:loading wire:target="removeCourseAssignments({{ $courseId }})" class="animate-spin inline-block w-2.5 h-2.5 border-2 border-red-500 border-t-transparent rounded-full" role="status"></span>
-                                                Dersi Temizle
-                                            </button>
-                                        @endif
-                                    </div>
-                                    
-                                    @php
-                                        $groupedByTopic = $courseAssignments->groupBy('topic.name');
-                                    @endphp
+                                        <div class="flex items-center justify-between mb-2 pb-1 border-b border-dashed border-gray-100">
+                                            <div class="font-semibold text-gray-700 flex items-center gap-1.5">
+                                                @if($courseId)
+                                                    <button 
+                                                        wire:click="toggleAssignedCourse({{ $courseId }})"
+                                                        class="text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                    >
+                                                        <svg class="w-3.5 h-3.5 transition-transform {{ !in_array($courseId, $collapsedAssignedCourses) ? 'rotate-90' : '' }}" 
+                                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                                <span>📚 {{ $courseName }}</span>
+                                                <span class="text-xs text-gray-500 font-normal">
+                                                    ({{ $courseAssignments->count() }} alt konu)
+                                                </span>
+                                            </div>
+                                            @if($courseId)
+                                                <button 
+                                                    wire:click="removeCourseAssignments({{ $courseId }})"
+                                                    wire:loading.attr="disabled"
+                                                    class="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                                                    onclick="return confirm('Bu derse ({{ $courseName }}) ait TÜM atamaları kaldırmak istediğinizden emin misiniz?')"
+                                                >
+                                                    <span wire:loading wire:target="removeCourseAssignments({{ $courseId }})" class="animate-spin inline-block w-2.5 h-2.5 border-2 border-red-500 border-t-transparent rounded-full" role="status"></span>
+                                                    Dersi Temizle
+                                                </button>
+                                            @endif
+                                        </div>
+                                        
+                                        @if(!in_array($courseId, $collapsedAssignedCourses))
+                                            @php
+                                                $groupedByTopic = $courseAssignments->groupBy('topic.name');
+                                            @endphp
 
-                                    @foreach($groupedByTopic as $topicName => $topicAssignments)
-                                        <div class="mb-3 pl-3">
-                                            <!-- Konu Seviyesi Silme -->
-                                            <div class="flex items-center justify-between text-sm font-medium text-gray-600 mb-1">
-                                                <span>📖 {{ $topicName }}</span>
+                                            @foreach($groupedByTopic as $topicName => $topicAssignments)
                                                 @php
                                                     $topicId = $topicAssignments->first()?->topic_id;
                                                 @endphp
-                                                @if($topicId)
-                                                    <button 
-                                                        wire:click="removeTopicAssignments({{ $topicId }})"
-                                                        wire:loading.attr="disabled"
-                                                        class="text-[11px] text-red-400 hover:text-red-600 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
-                                                        onclick="return confirm('Bu konuya ({{ $topicName }}) ait TÜM atamaları kaldırmak istediğinizden emin misiniz?')"
-                                                    >
-                                                        <span wire:loading wire:target="removeTopicAssignments({{ $topicId }})" class="animate-spin inline-block w-2 h-2 border-2 border-red-400 border-t-transparent rounded-full" role="status"></span>
-                                                        Konuyu Temizle
-                                                    </button>
-                                                @endif
-                                            </div>
-                                            <div class="pl-4 space-y-1">
-                                                @foreach($topicAssignments as $assignment)
-                                                    <div class="flex items-center justify-between text-xs py-1 hover:bg-gray-50 rounded px-2">
-                                                        <span class="text-gray-600">
-                                                            • {{ $assignment->subTopic->name }}
-                                                        </span>
-                                                        <button 
-                                                            wire:click="removeAssignment({{ $assignment->id }})"
-                                                            wire:loading.attr="disabled"
-                                                            class="text-red-400 hover:text-red-600 disabled:opacity-50 transition-colors"
-                                                            onclick="return confirm('Bu alt konu atamasını kaldırmak istediğinizden emin misiniz?')"
-                                                        >
-                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                            </svg>
-                                                        </button>
+                                                <div class="mb-3 pl-3">
+                                                    <!-- Konu Seviyesi Silme ve Katlama -->
+                                                    <div class="flex items-center justify-between text-sm font-medium text-gray-600 mb-1">
+                                                        <div class="flex items-center gap-1">
+                                                            @if($topicId)
+                                                                <button 
+                                                                    wire:click="toggleAssignedTopic({{ $topicId }})"
+                                                                    class="text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                                >
+                                                                    <svg class="w-3 h-3 transition-transform {{ !in_array($topicId, $collapsedAssignedTopics) ? 'rotate-90' : '' }}" 
+                                                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                                    </svg>
+                                                                </button>
+                                                            @endif
+                                                            <span>📖 {{ $topicName }}</span>
+                                                        </div>
+                                                        @if($topicId)
+                                                            <button 
+                                                                wire:click="removeTopicAssignments({{ $topicId }})"
+                                                                wire:loading.attr="disabled"
+                                                                class="text-[11px] text-red-400 hover:text-red-600 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                                                                onclick="return confirm('Bu konuya ({{ $topicName }}) ait TÜM atamaları kaldırmak istediğinizden emin misiniz?')"
+                                                            >
+                                                                <span wire:loading wire:target="removeTopicAssignments({{ $topicId }})" class="animate-spin inline-block w-2 h-2 border-2 border-red-400 border-t-transparent rounded-full" role="status"></span>
+                                                                Konuyu Temizle
+                                                            </button>
+                                                        @endif
                                                     </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endforeach
+                                                    
+                                                    @if(!in_array($topicId, $collapsedAssignedTopics))
+                                                        <div class="pl-4 space-y-1">
+                                                            @foreach($topicAssignments as $assignment)
+                                                                <div class="flex items-center justify-between text-xs py-1 hover:bg-gray-50 rounded px-2">
+                                                                    <span class="text-gray-600">
+                                                                        • {{ $assignment->subTopic->name }}
+                                                                    </span>
+                                                                    <button 
+                                                                        wire:click="removeAssignment({{ $assignment->id }})"
+                                                                        wire:loading.attr="disabled"
+                                                                        class="text-red-400 hover:text-red-600 disabled:opacity-50 transition-colors"
+                                                                        onclick="return confirm('Bu alt konu atamasını kaldırmak istediğinizden emin misiniz?')"
+                                                                    >
+                                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                @endforeach
+                            @endif
                         </div>
                     @endforeach
                 </div>

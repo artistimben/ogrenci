@@ -25,6 +25,9 @@ class AssignCourses extends Component
     public $showAssignModal = false;
     public $expandedFields = [];
     public $expandedCourses = [];
+    public $collapsedAssignedFields = [];
+    public $collapsedAssignedCourses = [];
+    public $collapsedAssignedTopics = [];
 
     public function mount($studentId)
     {
@@ -52,6 +55,33 @@ class AssignCourses extends Component
             $this->expandedCourses = array_diff($this->expandedCourses, [$courseId]);
         } else {
             $this->expandedCourses[] = $courseId;
+        }
+    }
+
+    public function toggleAssignedField($fieldName)
+    {
+        if (in_array($fieldName, $this->collapsedAssignedFields)) {
+            $this->collapsedAssignedFields = array_diff($this->collapsedAssignedFields, [$fieldName]);
+        } else {
+            $this->collapsedAssignedFields[] = $fieldName;
+        }
+    }
+
+    public function toggleAssignedCourse($courseId)
+    {
+        if (in_array($courseId, $this->collapsedAssignedCourses)) {
+            $this->collapsedAssignedCourses = array_diff($this->collapsedAssignedCourses, [$courseId]);
+        } else {
+            $this->collapsedAssignedCourses[] = $courseId;
+        }
+    }
+
+    public function toggleAssignedTopic($topicId)
+    {
+        if (in_array($topicId, $this->collapsedAssignedTopics)) {
+            $this->collapsedAssignedTopics = array_diff($this->collapsedAssignedTopics, [$topicId]);
+        } else {
+            $this->collapsedAssignedTopics[] = $topicId;
         }
     }
 
