@@ -75,14 +75,19 @@ class ResourceAssignment extends Component
         $this->validate([
             'resourceId' => 'required|exists:resources,id',
             'courseId' => 'nullable|exists:courses,id',
-            'fieldId' => 'nullable|exists:fields,id',
         ]);
+
+        // Ders seçilmişse, ilişkili alan ID'sini otomatik bul
+        $fieldId = null;
+        if ($this->courseId) {
+            $course = Course::find($this->courseId);
+            $fieldId = $course?->field_id;
+        }
 
         // Daha önce aynı kaynak atanmış mı kontrol et
         $exists = StudentResource::where('student_id', $this->selectedStudent)
                                  ->where('resource_id', $this->resourceId)
                                  ->where('course_id', $this->courseId)
-                                 ->where('field_id', $this->fieldId)
                                  ->exists();
 
         if ($exists) {
@@ -95,7 +100,7 @@ class ResourceAssignment extends Component
             'coach_id' => auth()->id(),
             'resource_id' => $this->resourceId,
             'course_id' => $this->courseId,
-            'field_id' => $this->fieldId,
+            'field_id' => $fieldId,
             'assigned_at' => now(),
         ]);
 

@@ -71,8 +71,8 @@
                                     <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">
-                                                <h4 class="font-medium text-gray-900">{{ $assignment->resource->name }}</h4>
-                                                @if($assignment->resource->publisher)
+                                                <h4 class="font-medium text-gray-900">{{ $assignment->resource?->name ?? 'Bilinmeyen Kaynak' }}</h4>
+                                                @if($assignment->resource?->publisher)
                                                     <p class="text-sm text-gray-600">{{ $assignment->resource->publisher }}</p>
                                                 @endif
                                                 @if($assignment->course)
@@ -83,7 +83,7 @@
                                                     </div>
                                                 @endif
                                                 <p class="text-xs text-gray-500 mt-2">
-                                                    Atanma: {{ $assignment->assigned_at->format('d.m.Y H:i') }}
+                                                    Atanma: {{ $assignment->assigned_at ? $assignment->assigned_at->format('d.m.Y H:i') : '-' }}
                                                 </p>
                                             </div>
                                             <button 
